@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Package
 {
+    use TimeStamps;
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
