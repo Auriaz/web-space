@@ -2,6 +2,9 @@
 
 namespace App\Entity;
 
+use Carbon\Carbon;
+use Doctrine\ORM\Mapping as ORM;
+
 trait TimeStamps
 {
     /**
@@ -14,12 +17,13 @@ trait TimeStamps
      */
     private $updatedAt;
 
-
-    public function  __construct()
+     /**
+     * @ORM\PrePersist
+     */
+    public function  setCreatedAt()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
-
     }
 
     public function getCreatedAt(): ?\DateTimeInterface
@@ -37,8 +41,28 @@ trait TimeStamps
         return $this;
     }
 
-    public function getUpdateAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?\DateTimeInterface
     {
         return $this->updatedAt;
+    }
+
+     /**
+     * How long ago in text that this cheese listing was added.
+     *
+     * @Groups("package:read")
+     */
+    public function getCreatedAtAgo(): string
+    {
+        return Carbon::instance($this->getCreatedAt())->diffForHumans();
+    }
+
+         /**
+     * How long ago in text that this cheese listing was added.
+     *
+     * @Groups("package:read")
+     */
+    public function getUpdatedAtAgo(): string
+    {
+        return Carbon::instance($this->getUpdatedAt())->diffForHumans();
     }
 }
