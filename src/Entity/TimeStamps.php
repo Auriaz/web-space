@@ -18,9 +18,9 @@ trait TimeStamps
     private $updatedAt;
 
      /**
-     * @ORM\PrePersist
+     * @ORM\PrePersist()
      */
-    public function  setCreatedAt()
+    public function  __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
@@ -49,7 +49,7 @@ trait TimeStamps
      /**
      * How long ago in text that this cheese listing was added.
      *
-     * @Groups("package:read")
+     * @Groups({"user:read", "package:read", "specification:read"})
      */
     public function getCreatedAtAgo(): string
     {
@@ -59,7 +59,7 @@ trait TimeStamps
          /**
      * How long ago in text that this cheese listing was added.
      *
-     * @Groups("package:read")
+     * @Groups({"user:read", "package:read", "specification:read"})
      */
     public function getUpdatedAtAgo(): string
     {

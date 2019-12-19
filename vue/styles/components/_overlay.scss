@@ -1,0 +1,10 @@
+.overlay {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    clip-path: polygon(97.6% 0, 100% 0, 100% 100%, 0 100%, 0 38%);
+    top: 0;
+    left: 0;
+    background-color: darken($mainBlue, 30%);
+    z-index: 2;
+}
