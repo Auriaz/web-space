@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
@@ -12,6 +14,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
 /**
+ * @ORM\Entity(repositoryClass="App\Repository\PackageRepository")
  * @ApiResource(
  *     collectionOperations={"get", "post"},
  *     itemOperations={
@@ -20,13 +23,12 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
  *          "delete",
  *          "patch"            
  *     },
- *     normalizationContext={"groups"={"package:read"}, "swagger_definition_name"="Read"},
- *     denormalizationContext={"groups"={"package:write"}, "swagger_definition_name"="Write"},
+ *     normalizationContext={"groups"={"package:read"}},
+ *     denormalizationContext={"groups"={"package:write"}},
  *     attributes={
  *          "pagination_items_per_page"=10,
  *     }
  * )
- * @ORM\Entity(repositoryClass="App\Repository\PackageRepository")
  * @ApiFilter(BooleanFilter::class, properties={"isPublished"})
  * @ApiFilter(SearchFilter::class, properties={"title": "partial"})
  * @ORM\HasLifecycleCallbacks()
@@ -65,6 +67,28 @@ class Package
      * @Groups({"package:write"})
      */
     private $isPublished = false;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="packages")
+     * @Groups({"package:read", "package:write"})
+     * @ORM\JoinColumn(nullable=false)
+     * Assert\Valid()
+     */
+    private $owner;
+
+    /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\Specification", mappedBy="packages")
+     * @Groups({"package:read", "package:write"})
+     * @Assert\Valid()
+     */
+    private $specifications;
+
+    public function __construct()
+    {
+        $this->specifications = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {
@@ -128,6 +152,46 @@ class Package
     public function setIsPublished(bool $isPublished): self
     {
         $this->isPublished = $isPublished;
+
+        return $this;
+    }
+
+    public function getOwner(): ?User
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(?User $owner): self
+    {
+        $this->owner = $owner;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Specification[]
+     */
+    public function getSpecifications(): Collection
+    {
+        return $this->specifications;
+    }
+
+    public function addSpecification(Specification $specification): self
+    {
+        if (!$this->specifications->contains($specification)) {
+            $this->specifications[] = $specification;
+            $specification->addPackage($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSpecification(Specification $specification): self
+    {
+        if ($this->specifications->contains($specification)) {
+            $this->specifications->removeElement($specification);
+            $specification->removePackage($this);
+        }
 
         return $this;
     }
